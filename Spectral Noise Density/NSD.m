@@ -1,9 +1,12 @@
 clear
-close all
+close
 clc
 
-%%
+%% Save original folder
 originalFolder = pwd;
+
+%%
+
 
 %% Single file to process
 
