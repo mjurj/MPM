@@ -9,10 +9,6 @@ originalFolder = pwd;
 
 filename = 'sample_data.mat';
 
-if ~isfile(filename)
-    error('File not found: %s', filename);
-end
-
 %% Welch PSD settings
 
 segmentFraction = 0.05;
@@ -31,18 +27,12 @@ raw_time = (0:length(voltage)-1).' / Fs_raw;
 %% Settings for time-resolved harmonic calculation
 
 % Number of drive periods used for each FFT.
-%
-% This is equivalent to "num_periods" in the Python code.
 periods_per_block = 1;
 
 % Number of samples per drive period
 samples_per_period = Fs_raw / f_drive;
 
-% Match Python:
-%
-% num_pts_per_period = sample_rate / frequency
-% num_samples = int((num_periods*num_pts_per_period) + 1)
-%
+% Samples per fft block:
 samples_per_block = floor( ...
     periods_per_block * samples_per_period + 1);
 
@@ -99,9 +89,6 @@ second_harmonic = zeros(num_blocks,1);
 harmonic_time = zeros(num_blocks,1);
 
 %% Calculate second and third harmonics using FFT
-%
-% This section now follows the same basic method as the Python code:
-%
 % 1. Read a block of raw DAQ voltage
 % 2. Take its FFT
 % 3. Calculate the FFT frequency axis
@@ -213,13 +200,9 @@ harmonic_3 = harmonic_3(valid);
 
 %% Apply calibration
 
-B_measured = (ratio + 0.04247) ./ 3.798;
+B_measured = (ratio + 0.0442) ./ 3.7978;
 B_measured = B_measured.*3.5651.*1e3;
 
-% Alternative calibration using only the second harmonic:
-%
-% B_measured = ...
-%     (second_harmonic + 3.905e-5) ./ 9.644e-7;
 
 %% Determine sampling parameters of B_measured
 
@@ -326,27 +309,6 @@ ASD_B = sqrt(PSD_B);
 
 ASD_B = ASD_B .* 1e3;
 
-%% Plot measured field versus time
-% 
-% % figure('Color','w');
-% % 
-% % plot( ...
-% %     t, ...
-% %     B_measured, ...
-% %     'LineWidth',1);
-% % 
-% % xlabel('Time (s)');
-% % 
-% % ylabel('Measured field (\muT)');
-% % 
-% % set(gcf,'Units','inches')
-% % 
-% % set(gcf,'Position', ...
-% %     [1 1 7 6])
-% % 
-% % ax = gca;
-% % 
-% % ax.FontSize = 22;
 %% Plot amplitude spectral density
 
 figure('Color','w');
@@ -403,15 +365,12 @@ ax_inset = axes( ...
     'Position', ...
     [0.34 0.66 0.28 0.25]);
 
-db = 41.495-mean(B_measured);
-B_in = B_measured+db;
-
-bav = mean(B_in);
+bav = mean(B_measured);
 
 plot( ...
     ax_inset, ...
     t, ...
-    B_in, ...
+    B_measured, ...
     'LineWidth',1)
 
 grid(ax_inset,'on')
